@@ -1,0 +1,279 @@
+# Serverless configuration file for the HBR Feedcast serverless
+# service. This application performs the following:
+# - Polls the HBR IdeaCast RSS feed on a regular interval
+#   and stores information about the podcasts in a DynamoDB table
+# - Each podcast's content description is sent to Comprehend for entity
+#   analysis
+# - The results from Comprehend are stored in an Elasticsearch cluster
+# - A Lambda powered Alexa skill is also created which allows users to
+#   query the cluster or DynamoDB table with questions related to the content
+
+service: hbr-feedcast
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: us-east-1
+
+custom:
+  # Name of the Elasticsearch Domain
+  es_domain_name: hbrfeedcast
+  # Name of the latest episodes DynamoDB GSI
+  latest_index: LatestEpisodes
+  # Alexa Skill ID
+  alexa_skill_id: amzn1.ask.skill.my-skill-id
+
+# you can add packaging information here
+package:
+  include:
+    - update-feed.py
+    - search-feed.py
+    - site-packages/**
+  exclude:
+    - venv/**
+    - .gitignore
+
+functions:
+  updateFeed:
+    handler: feed.main
+    name: ${self:service}-updateFeed-${self:provider.stage}
+    description: Polls feeds.harvardbusiness.org periodically to check for the latest releases of the podcasts
+    memorySize: 128
+    runtime: python3.6
+    timeout: 120
+    role: UpdateFeedRole
+    environment:
+      feedurl: http://feeds.harvardbusiness.org/harvardbusiness/ideacast
+      minscore: 95
+      ddb:
+        Ref: FeedDb
+      esdomain:
+        Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
+    tags:
+      environment: ${self:provider.stage}
+      project: ${self:service}
+    events:
+      - schedule:
+          description: Schedule to check the HBR IdeaCast feed
+          rate: rate(1 day)
+          enabled: true
+  alexaSkill:
+    handler: alexa.main
+    name: ${self:service}-alexaSkill-${self:provider.stage}
+    description: Powers the HBR Feedcast Alexa skill
+    memorySize: 128
+    runtime: python3.6
+    timeout: 120
+    role: AlexaSkillRole
+    environment:
+      ddb:
+        Ref: FeedDb
+      esdomain:
+        Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
+      latest_index: ${self:custom.latest_index}
+    tags:
+      environment: ${self:provider.stage}
+      project: ${self:service}
+    events:
+      - alexaSkill:
+          appId: ${self:custom.alexa_skill_id}
+          enabled: true
+
+
+# CloudFormation Resources
+resources:
+  Resources:
+    FeedDb:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions: 
+          - AttributeName: "title"
+            AttributeType: "S"
+          - AttributeName: "pub_date"
+            AttributeType: "S"
+          - AttributeName: "pub_time"
+            AttributeType: "S"
+        KeySchema: 
+          - AttributeName: "title"
+            KeyType: "HASH"
+        ProvisionedThroughput: 
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:custom.latest_index}
+            KeySchema:
+              - AttributeName: "pub_date"
+                KeyType: "HASH"
+              - AttributeName: "pub_time"
+                KeyType: "RANGE"
+            Projection:
+              ProjectionType: "KEYS_ONLY"
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        Tags:
+          - Key: environment
+            Value: ${self:provider.stage}
+          - Key: project
+            Value: ${self:service}
+    ElasticsearchDomain:
+      Type: AWS::Elasticsearch::Domain
+      Properties:
+        DomainName: ${self:custom.es_domain_name}
+        ElasticsearchVersion: 6.3
+        ElasticsearchClusterConfig:
+          InstanceCount: '1'
+          InstanceType: t2.medium.elasticsearch
+        EBSOptions:
+          EBSEnabled: 'true'
+          VolumeSize: 10
+          VolumeType: gp2
+        SnapshotOptions:
+          AutomatedSnapshotStartHour: '0'
+        AccessPolicies:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: 
+                  Fn::GetAtt: UpdateFeedRole.Arn
+              Action: 
+                - es:ESHttpPost
+                - es:ESHttpPut
+              Resource: 
+                - 'Fn::Join':
+                  - ':'
+                  -
+                    - 'arn:aws:es'
+                    - Ref: 'AWS::Region'
+                    - Ref: 'AWS::AccountId'
+                    - 'domain/${self:custom.es_domain_name}/*'
+            - Effect: Allow
+              Principal:
+                AWS: 
+                  Fn::GetAtt: AlexaSkillRole.Arn
+              Action: 
+                - es:ESHttpGet
+                - es:ESHttpHead
+              Resource: 
+                - 'Fn::Join':
+                  - ':'
+                  -
+                    - 'arn:aws:es'
+                    - Ref: 'AWS::Region'
+                    - Ref: 'AWS::AccountId'
+                    - 'domain/${self:custom.es_domain_name}/*'
+        AdvancedOptions:
+          rest.action.multi.allow_explicit_index: 'true'
+        Tags:
+          - Key: environment
+            Value: ${self:provider.stage}
+          - Key: project
+            Value: ${self:service}
+
+    UpdateFeedRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                Service:
+                  - 'lambda.amazonaws.com'
+              Action: 'sts:AssumeRole'
+        Path: '/'
+        Policies:
+          - PolicyName: update-feed-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action:
+                    - 'logs:CreateLogGroup'
+                    - 'logs:CreateLogStream'
+                    - 'logs:PutLogEvents'
+                  Resource: 
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+                - Effect: 'Allow'
+                  Action:
+                    - 'dynamodb:Query'
+                    - 'dynamodb:PutItem'
+                  Resource:
+                    Fn::GetAtt: FeedDb.Arn
+                - Effect: 'Allow'
+                  Action:
+                    - 'comprehend:DetectEntities'
+                  Resource: '*'
+                - Effect: 'Allow'
+                  Action:
+                    - 'es:ESHttpPost'
+                    - 'es:ESHttpPut'
+                  Resource: 
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:es'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'domain/${self:custom.es_domain_name}/*'
+
+    AlexaSkillRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                Service:
+                  - 'lambda.amazonaws.com'
+              Action: 'sts:AssumeRole'
+        Policies:
+          - PolicyName: alexa-skill-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action:
+                    - 'logs:CreateLogGroup'
+                    - 'logs:CreateLogStream'
+                    - 'logs:PutLogEvents'
+                  Resource: 
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+                - Effect: 'Allow'
+                  Action:
+                    - 'dynamodb:Query'
+                    - 'dynamodb:Scan'
+                  Resource:
+                    - 'Fn::GetAtt': FeedDb.Arn
+                    - 'Fn::Join':
+                      - ''
+                      -
+                        - 'Fn::GetAtt': FeedDb.Arn
+                        - '/index/${self:custom.latest_index}'
+                - Effect: 'Allow'
+                  Action:
+                    - 'es:ESHttpGet'
+                    - 'es:ESHttpHead'
+                  Resource: 
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:es'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'domain/${self:custom.es_domain_name}/*'

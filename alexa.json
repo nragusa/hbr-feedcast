@@ -1,0 +1,216 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "h.b.r. feedcast",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetLatestEpisodes",
+                    "slots": [],
+                    "samples": [
+                        "what's the latest episodes",
+                        "what's new",
+                        "what is new",
+                        "what are the latest episodes"
+                    ]
+                },
+                {
+                    "name": "GetEpisodeByNumber",
+                    "slots": [
+                        {
+                            "name": "episode_id",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "what episode {episode_id} is about",
+                        "tell me about episode {episode_id}",
+                        "what is episode {episode_id} about"
+                    ]
+                },
+                {
+                    "name": "GetEpisodeByTitle",
+                    "slots": [
+                        {
+                            "name": "episode_title",
+                            "type": "title"
+                        }
+                    ],
+                    "samples": [
+                        "tell me about {episode_title}",
+                        "what {episode_title} is about",
+                        "what is the episode {episode_title} about"
+                    ]
+                },
+                {
+                    "name": "PersonSearch",
+                    "slots": [
+                        {
+                            "name": "episode_person",
+                            "type": "AMAZON.Person"
+                        }
+                    ],
+                    "samples": [
+                        "is {episode_person} in any of the episodes",
+                        "are any episodes about {episode_person}",
+                        "is any episodes is about {episode_person}",
+                        "if {episode_person} is in any episodes",
+                        "if there are any episodes with {episode_person}"
+                    ]
+                },
+                {
+                    "name": "IdeaSearch",
+                    "slots": [
+                        {
+                            "name": "episode_idea",
+                            "type": "idea"
+                        }
+                    ],
+                    "samples": [
+                        "find episodes on {episode_idea}",
+                        "are there any episodes about {episode_idea}",
+                        "are there any episodes on {episode_idea}",
+                        "if there are any episodes on {episode_idea}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "title",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "Understanding Digital Strategy"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "The Science Behind Sleep and High Performance"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "How Alibaba Is Leading Digital Innovation in China"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "A Hollywood Executive On Negotiation, Talent, and Risk"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "How Companies Can Tap Into Talent Clusters"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "The Power of Curiosity"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Doing Business in China"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Science Business"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "The New Capitalists"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Innovation Traps"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "Under the Hood of the Automotive Industry"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "idea",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "innovation",
+                                "synonyms": [
+                                    "innovate"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "leadership"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "performance"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "strategy"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "talent"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "clusters"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "research"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "team",
+                                "synonyms": [
+                                    "teams"
+                                ]
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "collaboration"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
