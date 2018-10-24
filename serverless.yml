@@ -16,7 +16,7 @@ provider:
   stage: dev
   region: us-east-1
   # CHANGE ME!
-  stackName: lastname-${self:service}-${self:opt:stage, self:stage}
+  stackName: lastname-${self:service}-${opt:stage, self:stage}
 
 custom:
   # Name of the Elasticsearch Domain
