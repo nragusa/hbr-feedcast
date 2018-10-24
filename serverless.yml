@@ -16,12 +16,12 @@ provider:
   stage: dev
   region: us-east-1
   # CHANGE ME!
-  stackName: lastname-${self:service}-${opt:stage, self:stage}
+  stackName: LASTNAME-${self:service}-${opt:stage, self:stage}
 
 custom:
   # Name of the Elasticsearch Domain
   # CHANGE ME!
-  es_domain_name: lastname-hbrfeedcast
+  es_domain_name: LASTNAME-hbrfeedcast
   # Name of the latest episodes DynamoDB GSI
   latest_index: LatestEpisodes
   # Alexa Skill ID
