@@ -15,10 +15,13 @@ provider:
   runtime: python3.6
   stage: dev
   region: us-east-1
+  # CHANGE ME!
+  stackName: lastname-${self:service}-${self:opt:stage, self:stage}
 
 custom:
   # Name of the Elasticsearch Domain
-  es_domain_name: hbrfeedcast
+  # CHANGE ME!
+  es_domain_name: lastname-hbrfeedcast
   # Name of the latest episodes DynamoDB GSI
   latest_index: LatestEpisodes
   # Alexa Skill ID
