@@ -16,7 +16,7 @@ provider:
   stage: dev
   region: us-east-1
   # CHANGE ME!
-  stackName: LASTNAME-${self:service}-${opt:stage, self:stage}
+  stackName: LASTNAME-${self:service}-${opt:stage, self:provider.stage}
 
 custom:
   # Name of the Elasticsearch Domain
@@ -40,7 +40,7 @@ package:
 functions:
   updateFeed:
     handler: feed.main
-    name: ${self:service}-updateFeed-${self:provider.stage}
+    name: ${self:stackName}-updateFeed-${opt:stage, self:provider.stage}
     description: Polls feeds.harvardbusiness.org periodically to check for the latest releases of the podcasts
     memorySize: 128
     runtime: python3.6
@@ -54,7 +54,7 @@ functions:
       esdomain:
         Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
     tags:
-      environment: ${self:provider.stage}
+      environment: ${opt:stage, self:provider.stage}
       project: ${self:service}
     events:
       - schedule:
@@ -63,7 +63,7 @@ functions:
           enabled: true
   # alexaSkill:
   #   handler: alexa.main
-  #   name: ${self:service}-alexaSkill-${self:provider.stage}
+  #   name: ${self:stackName}-alexaSkill-${opt:stage, self:provider.stage}
   #   description: Powers the HBR Feedcast Alexa skill
   #   memorySize: 128
   #   runtime: python3.6
@@ -76,7 +76,7 @@ functions:
   #       Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
   #     latest_index: ${self:custom.latest_index}
   #   tags:
-  #     environment: ${self:provider.stage}
+  #     environment: ${opt:stage, self:provider.stage}
   #     project: ${self:service}
   #   events:
   #     - alexaSkill:
@@ -117,7 +117,7 @@ resources:
               WriteCapacityUnits: 1
         Tags:
           - Key: environment
-            Value: ${self:provider.stage}
+            Value: ${opt:stage, self:provider.stage}
           - Key: project
             Value: ${self:service}
     ElasticsearchDomain:
@@ -171,7 +171,7 @@ resources:
           rest.action.multi.allow_explicit_index: 'true'
         Tags:
           - Key: environment
-            Value: ${self:provider.stage}
+            Value: ${opt:stage, self:provider.stage}
           - Key: project
             Value: ${self:service}
 
