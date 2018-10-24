@@ -22,7 +22,7 @@ custom:
   # Name of the latest episodes DynamoDB GSI
   latest_index: LatestEpisodes
   # Alexa Skill ID
-  alexa_skill_id: amzn1.ask.skill.my-skill-id
+  # alexa_skill_id: amzn1.ask.skill.XXXXX-XXXX-XXXX-XXXX-XXXXXXXXX
 
 # you can add packaging information here
 package:
@@ -58,27 +58,27 @@ functions:
           description: Schedule to check the HBR IdeaCast feed
           rate: rate(1 day)
           enabled: true
-  alexaSkill:
-    handler: alexa.main
-    name: ${self:service}-alexaSkill-${self:provider.stage}
-    description: Powers the HBR Feedcast Alexa skill
-    memorySize: 128
-    runtime: python3.6
-    timeout: 120
-    role: AlexaSkillRole
-    environment:
-      ddb:
-        Ref: FeedDb
-      esdomain:
-        Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
-      latest_index: ${self:custom.latest_index}
-    tags:
-      environment: ${self:provider.stage}
-      project: ${self:service}
-    events:
-      - alexaSkill:
-          appId: ${self:custom.alexa_skill_id}
-          enabled: true
+  # alexaSkill:
+  #   handler: alexa.main
+  #   name: ${self:service}-alexaSkill-${self:provider.stage}
+  #   description: Powers the HBR Feedcast Alexa skill
+  #   memorySize: 128
+  #   runtime: python3.6
+  #   timeout: 120
+  #   role: AlexaSkillRole
+  #   environment:
+  #     ddb:
+  #       Ref: FeedDb
+  #     esdomain:
+  #       Fn::GetAtt: ElasticsearchDomain.DomainEndpoint
+  #     latest_index: ${self:custom.latest_index}
+  #   tags:
+  #     environment: ${self:provider.stage}
+  #     project: ${self:service}
+  #   events:
+  #     - alexaSkill:
+  #         appId: ${self:custom.alexa_skill_id}
+  #         enabled: true
 
 
 # CloudFormation Resources
