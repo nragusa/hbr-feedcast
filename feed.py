@@ -132,9 +132,9 @@ def main(event, context):
     Elasticsearch. """
     feed = feedparser.parse(FEED_URL)
     total_added = 0
-    if event['max']:
+    try:
         total_to_add = int(event['max'])
-    else:
+    except KeyError:
         total_to_add = 10
     for entry in reversed(feed['entries']):
         if total_added == total_to_add:
