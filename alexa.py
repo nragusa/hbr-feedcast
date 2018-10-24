@@ -129,7 +129,7 @@ def get_episode_by_number(slots):
     try:
         episodes = table.scan(
             IndexName=LATEST_INDEX,
-            FilterExpression=Attr('title').begins_with(episode)
+            FilterExpression=Attr('title').begins_with(episode + ':')
         )
     except ClientError as error:
         print('Problem scanning DynamoDB: {}'.format(error))
