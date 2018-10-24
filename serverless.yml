@@ -40,7 +40,7 @@ package:
 functions:
   updateFeed:
     handler: feed.main
-    name: ${self:stackName}-updateFeed-${opt:stage, self:provider.stage}
+    name: ${self:provider.stackName}-updateFeed-${opt:stage, self:provider.stage}
     description: Polls feeds.harvardbusiness.org periodically to check for the latest releases of the podcasts
     memorySize: 128
     runtime: python3.6
@@ -63,7 +63,7 @@ functions:
           enabled: true
   # alexaSkill:
   #   handler: alexa.main
-  #   name: ${self:stackName}-alexaSkill-${opt:stage, self:provider.stage}
+  #   name: ${self:provider.stackName}-alexaSkill-${opt:stage, self:provider.stage}
   #   description: Powers the HBR Feedcast Alexa skill
   #   memorySize: 128
   #   runtime: python3.6
