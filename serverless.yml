@@ -19,7 +19,7 @@ provider:
 custom:
   # Name of the Elasticsearch Domain
   # CHANGE ME!
-  es_domain_name: LASTNAME-hbrfeedcast
+  es_domain_name: lastname-hbrfeedcast
   # Name of the latest episodes DynamoDB GSI
   latest_index: LatestEpisodes
   # Alexa Skill ID
