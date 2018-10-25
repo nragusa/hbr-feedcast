@@ -60,7 +60,6 @@ functions:
           enabled: true
   # alexaSkill:
   #   handler: alexa.main
-  #   name: ${self:provider.stackName}-alexaSkill
   #   description: Powers the HBR Feedcast Alexa skill
   #   memorySize: 128
   #   runtime: python3.6
